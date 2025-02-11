@@ -1,0 +1,37 @@
+.env
+# Ignorar dependencias
+node_modules/
+vendor/
+target/
+bin/
+obj/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración y entorno
+.env
+*.log
+*.tmp
+
+# Cachés y archivos generados
+.cache/
+dist/
+build/
+coverage/
+
+# Configuración de editores de código
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Subidas de usuario
+uploads/
