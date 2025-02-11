@@ -1,4 +1,11 @@
+# Archivos de entorno y configuración
 .env
+.env.local
+.env.production
+.env.development
+.env.test
+.env.*.local
+
 # Ignorar dependencias
 node_modules/
 vendor/
@@ -6,26 +13,36 @@ target/
 bin/
 obj/
 
+# Archivos de caché y compilación
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 env/
 venv/
-# Archivos del sistema operativo
-.DS_Store
-Thumbs.db
-
-# Archivos de configuración y entorno
-.env
-*.log
-*.tmp
-
-# Cachés y archivos generados
 .cache/
 dist/
 build/
 coverage/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración de Docker (excepto el principal)
+docker-compose.override.yml
+docker-compose.dev.yml
+.docker/
+
+# Ignorar imágenes y contenedores de Docker
+*.tar
+*.img
+*.iml
+
+# Ignorar volúmenes y archivos temporales de Docker
+volumes/
+logs/
+*.sock
 
 # Configuración de editores de código
 .vscode/
@@ -33,5 +50,16 @@ coverage/
 *.swp
 *.swo
 
-# Subidas de usuario
+# Archivos generados por herramientas de CI/CD
+.github/workflows/*.log
+.github/actions/cache/
+.npm/
+yarn.lock
+pnpm-lock.yaml
+
+# Archivos de subida de usuario
 uploads/
+
+# Archivos temporales y logs
+*.log
+*.tmp
