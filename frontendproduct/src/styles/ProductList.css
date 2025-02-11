@@ -14,7 +14,7 @@
     text-align: center;
     border-radius: 8px;
     width: 200px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(9, 40, 180, 0.945);
     transition: transform 0.2s;
   }
   
@@ -37,7 +37,7 @@
   
   /* Precio del producto */
   .product-card p {
-    color: #555;
+    color: #1032a0;
     font-size: 1rem;
   }
   
