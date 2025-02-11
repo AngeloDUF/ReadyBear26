@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Products from "./pages/Products";
 import AddProduct from "./pages/AddProduct";
+import UpdateProduct from "./pages/UpdateProduct"; // ✅ Importación añadida
 import Navbar from "./components/Navbar";
 
 // Componente para proteger rutas
@@ -32,6 +33,7 @@ function MainContent() {
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
         <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
+        <Route path="/update-product/:id" element={<ProtectedRoute><UpdateProduct /></ProtectedRoute>} /> {/* ✅ Ruta agregada */}
       </Routes>
     </>
   );

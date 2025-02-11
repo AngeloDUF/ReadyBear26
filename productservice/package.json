@@ -1,11 +1,12 @@
 {
     "name": "create-product-service",
     "version": "1.0.0",
+    "type": "module",
     "description": "Microservicio para la creación de productos en un catálogo.",
     "main": "src/app.js",
     "scripts": {
         "start": "node src/app.js",
-        "dev": "nodemon src/app.js"
+        "dev": "nodemon --exec node src/app.js"
     },
     "keywords": [
         "nodejs",
@@ -24,5 +25,9 @@
     },
     "devDependencies": {
         "nodemon": "^3.0.1"
+    },
+    "engines": {
+        "node": ">=18.0.0"
     }
 }
+
