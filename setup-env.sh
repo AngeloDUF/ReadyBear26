@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "í³„ Creando archivos .env para cada microservicio..."
+echo "ï¿½ï¿½ï¿½ Creando archivos .env para cada microservicio..."
 
 # Definir las variables para cada servicio
 declare -A env_files
@@ -21,9 +21,12 @@ MONGO_URI=mongodb://mongo-db:27017/productdb"
 env_files["updateproduct"]="PORT=3005
 MONGO_URI=mongodb://mongo-db:27017/productdb"
 
+env_files["frontendproduct"]="VITE_API_URL=http://localhost:3001
+VITE_AUTH_URL=http://localhost:3001"
+
 # Crear los archivos .env en cada microservicio
 for service in "${!env_files[@]}"; do
-    echo "í³ Creando $service/.env ..."
+    echo "ï¿½ï¿½ï¿½ Creando $service/.env ..."
     echo -e "${env_files[$service]}" > "$service/.env"
 done
 
