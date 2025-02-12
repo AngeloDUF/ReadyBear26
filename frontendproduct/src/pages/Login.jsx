@@ -6,15 +6,29 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Simulación de autenticación (reemplaza con lógica real)
-    if (email === "admin@readybear.com" && password === "123456") {
-      localStorage.setItem("auth", "true"); // Guarda autenticación
-      navigate("/"); // Redirige a Home
-    } else {
-      alert("Credenciales incorrectas");
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Error al iniciar sesión");
+      }
+
+      // Guardar el token en localStorage
+      localStorage.setItem("token", data.token);
+
+      // Redirigir a la página principal (Home)
+      navigate("/");
+    } catch (error) {
+      alert("Error de autenticación: " + error.message);
     }
   };
 
