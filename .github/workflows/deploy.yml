@@ -1,0 +1,30 @@
+name: Deploy ReadyBear
+
+on:
+  push:
+    branches:
+      - qa  # Se ejecuta en cada push a la rama QA
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar clave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/readybear-key.pem
+          chmod 600 ~/.ssh/readybear-key.pem
+          ssh-keyscan 35.174.69.70 >> ~/.ssh/known_hosts
+
+      - name: Desplegar en EC2
+        run: |
+          ssh -i ~/.ssh/readybear-key.pem ubuntu@35.174.69.70 "
+          cd ~/ReadyBear26 &&
+          git pull origin qa &&
+          docker-compose down &&
+          docker-compose up --build -d
+          "
