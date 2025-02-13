@@ -8,7 +8,7 @@ import Navbar from "./components/Navbar";
 
 // Componente para proteger rutas
 const ProtectedRoute = ({ children }) => {
-  const auth = localStorage.getItem("auth"); // Verifica si el usuario está autenticado
+  const auth = localStorage.getItem("auth"); // ✅ Ahora es consistente en todos lados
   return auth ? children : <Navigate to="/login" />; // Si no está autenticado, redirige a login
 };
 
