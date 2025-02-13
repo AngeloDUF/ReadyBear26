@@ -6,31 +6,35 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
-
   const handleLogin = async (e) => {
     e.preventDefault();
-
+  
     const response = await fetch("http://localhost:5000/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
-
+  
     const data = await response.json();
-
+  
     if (response.ok) {
-      console.log("Token recibido:", data.token); // Verificar en consola si se recibe el token
-      localStorage.setItem("auth", data.token); // ✅ Guarda el token como "auth"
-      setMessage("Inicio de sesión exitoso");
-
+      console.log("✅ Token recibido:", data.token);
+      
+      // 🔄 Guardamos el token con la clave correcta
+      localStorage.setItem("token", data.token);
+  
+      // 🔄 Notificamos a React que el token cambió
+      window.dispatchEvent(new Event("authChanged"));
+  
+      // 🔄 Redirigir con `window.location.href` en vez de `navigate`
       setTimeout(() => {
-        navigate("/"); // Redirige a la página principal
-      }, 1000);
+        window.location.href = "/";
+      }, 500);
     } else {
       setMessage(data.message);
     }
   };
-
+  
   return (
     <div>
       <h2>Login</h2>

@@ -1,16 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react"; 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Products from "./pages/Products";
 import AddProduct from "./pages/AddProduct";
-import UpdateProduct from "./pages/UpdateProduct"; // ✅ Importación añadida
+import UpdateProduct from "./pages/UpdateProduct"; 
 import Navbar from "./components/Navbar";
-
-// Componente para proteger rutas
-const ProtectedRoute = ({ children }) => {
-  const auth = localStorage.getItem("auth"); // ✅ Ahora es consistente en todos lados
-  return auth ? children : <Navigate to="/login" />; // Si no está autenticado, redirige a login
-};
+import ProtectedRoute from "./components/ProtectedRoute";
+ // ✅ Asegurar que se importa correctamente
 
 function App() {
   return (
@@ -33,7 +30,7 @@ function MainContent() {
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
         <Route path="/add-product" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
-        <Route path="/update-product/:id" element={<ProtectedRoute><UpdateProduct /></ProtectedRoute>} /> {/* ✅ Ruta agregada */}
+        <Route path="/update-product/:id" element={<ProtectedRoute><UpdateProduct /></ProtectedRoute>} />
       </Routes>
     </>
   );
