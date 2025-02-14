@@ -18,13 +18,23 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/readybear-key.pem
           chmod 600 ~/.ssh/readybear-key.pem
-          ssh-keyscan 3.229.221.22 >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Verificar conexión SSH con EC2
+        run: |
+          ssh -i ~/.ssh/readybear-key.pem ubuntu@${{ secrets.EC2_HOST }} "echo 'Conexión establecida con EC2'"
 
       - name: Desplegar en EC2
         run: |
-          ssh -i ~/.ssh/readybear-key.pem ubuntu@3.229.221.22 "
-          cd ~/ReadyBear26 &&
-          git pull origin qa &&
-          docker-compose down &&
-          docker-compose up --build -d
-          "
+          ssh -i ~/.ssh/readybear-key.pem ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            cd ~/ReadyBear26
+            git reset --hard origin/qa
+            git pull origin qa
+            chmod +x setup.sh setup-env.sh
+            ./setup.sh
+            ./setup-env.sh
+            docker-compose down
+            docker-compose pull
+            docker-compose up --build -d
+            echo "Despliegue completado en EC2"
+          EOF
