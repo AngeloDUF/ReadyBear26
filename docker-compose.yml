@@ -126,18 +126,18 @@ services:
       - readybear-network
 
   # Servicio de sugerencias
-  suggestionservice:
-    build: ./suggestionservice
-    container_name: suggestionservice
-    restart: always
-    ports:
-      - "3009:3009"
-    depends_on:
-      - mongo-db
-    env_file:
-      - ./suggestionservice/.env
-    networks:
-      - readybear-network
+ # suggestionservice:
+  #  build: ./suggestionservice
+   # container_name: suggestionservice
+    #restart: always
+    #ports:
+    # - "3009:3009"
+    #depends_on:
+    #  - mongo-db
+    #env_file:
+     # - ./suggestionservice/.env
+    #networks:
+     # - readybear-network
 
   # Servicio de documentos
   documentservice:
