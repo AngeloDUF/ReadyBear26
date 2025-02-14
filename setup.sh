@@ -2,22 +2,33 @@
 
 echo "🚀 Iniciando configuración de ReadyBear..."
 
-# Lista de microservicios
-SERVICES=("auth-service" "deleteproduct" "productservice" "readproduct" "updateproduct")
+# Lista de microservicios basada en la estructura de ReadyBear26-qa
+SERVICES=(
+    "auditservice"
+    "auth-service"
+    "backend-auth"
+    "commentservice"
+    "deleteproduct"
+    "documentservice"
+    "frontendproduct"
+    "productservice"
+    "readproduct"
+    "suggestionservice"
+    "updateproduct"
+)
 
 # Instalar dependencias en cada microservicio
 for SERVICE in "${SERVICES[@]}"; do
-    echo "📦 Instalando dependencias en $SERVICE..."
-    cd $SERVICE
-    npm install
-    cd ..
+    if [ -d "$SERVICE" ]; then
+        echo "📦 Instalando dependencias en $SERVICE..."
+        cd $SERVICE
+        npm install
+        cd ..
+    else
+        echo "⚠️ Advertencia: No se encontró el directorio $SERVICE, saltando..."
+    fi
 done
-
-# Instalar dependencias en el frontend
-echo "🎨 Instalando dependencias en frontendproduct..."
-cd frontendproduct
-npm install
-cd ..
 
 echo "✅ Instalación completada. Puedes iniciar los servicios manualmente."
 echo "Para ejecutar un servicio, usa: cd <servicio> && npm start"
+
