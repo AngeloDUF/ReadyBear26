@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Creando archivos .env para cada microservicio en ReadyBear26-qa..."
+echo "🚀 Creando archivos .env para cada microservicio..."
 
 # Definir las variables de entorno para cada servicio
 declare -A env_files
@@ -40,16 +40,14 @@ MONGO_URI=mongodb://mongo-db:27017/suggestiondb"
 env_files["updateproduct"]="PORT=3009
 MONGO_URI=mongodb://mongo-db:27017/productdb"
 
-# Crear los archivos .env en cada microservicio dentro de ReadyBear26-qa
+# Crear los archivos .env en cada microservicio
 for service in "${!env_files[@]}"; do
-    service_path="ReadyBear26-qa/$service"
-    
-    if [ -d "$service_path" ]; then
-        echo "📄 Creando $service/.env en $service_path..."
-        echo -e "${env_files[$service]}" > "$service_path/.env"
+    if [ ! -f "$service/.env" ]; then
+        echo "📄 Creando $service/.env ..."
+        echo -e "${env_files[$service]}" > "$service/.env"
     else
-        echo "⚠️ Advertencia: No se encontró el directorio $service_path"
+        echo "⚠️ $service/.env ya existe, no se sobrescribirá."
     fi
 done
 
-echo "✅ Todos los archivos .env han sido creados correctamente en ReadyBear26-qa."
+echo "✅ Todos los archivos .env han sido creados correctamente."
