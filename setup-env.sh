@@ -51,3 +51,5 @@ for service in "${!env_files[@]}"; do
 done
 
 echo "✅ Todos los archivos .env han sido creados correctamente."
+
+#hi
