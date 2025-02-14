@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         service: [pruebafront, back, document, ReadyBear-Instance, pruebafront2]
-        secret_ip: [EC2_PRUEBAFRONT_IP, EC2_BACK_IP, EC2_DOCUMENT_IP, EC2_READYBEAR_IP, EC2_PRUEBAFRONT2_IP]
+        secret_ip: [IP_2, IP_3, IP_4, IP_5, IP_6]
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
