@@ -42,14 +42,18 @@ MONGO_URI=mongodb://mongo-db:27017/productdb"
 
 # Crear los archivos .env en cada microservicio
 for service in "${!env_files[@]}"; do
-    if [ ! -f "$service/.env" ]; then
-        echo "📄 Creando $service/.env ..."
-        echo -e "${env_files[$service]}" > "$service/.env"
+    if [ -d "$service" ]; then
+        if [ ! -f "$service/.env" ]; then
+            echo "📄 Creando $service/.env ..."
+            echo -e "${env_files[$service]}" > "$service/.env"
+            chmod 600 "$service/.env"  # Asegurar permisos adecuados
+        else
+            echo "⚠️  $service/.env ya existe, no se sobrescribirá."
+        fi
     else
-        echo "⚠️ $service/.env ya existe, no se sobrescribirá."
+        echo "🚨 Advertencia: El directorio $service no existe."
     fi
+
 done
 
 echo "✅ Todos los archivos .env han sido creados correctamente."
-
-#hi
