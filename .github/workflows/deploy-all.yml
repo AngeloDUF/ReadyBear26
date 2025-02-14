@@ -1,0 +1,37 @@
+name: Deploy Microservices
+
+on:
+  push:
+    branches:
+      - qa
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [updateproduct, readproduct, commenter, document, product, auditservice, suggestions]
+        instance_ip: [3.236.185.223, 34.201.49.18, 52.206.96.232, 54.209.110.225, 44.204.227.176, 50.19.18.56, 35.174.69.70]
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar clave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/readybear-key.pem
+          chmod 600 ~/.ssh/readybear-key.pem
+          ssh-keyscan ${{ matrix.instance_ip }} >> ~/.ssh/known_hosts
+
+      - name: Desplegar en EC2
+        run: |
+          ssh -i ~/.ssh/readybear-key.pem ubuntu@${{ matrix.instance_ip }} "
+          cd /home/ubuntu/ReadyBear26 &&
+          git pull origin qa &&
+          chmod +x setup.sh setup-env.sh &&
+          ./setup.sh &&
+          ./setup-env.sh &&
+          cd ${{ matrix.service }} &&
+          docker-compose down &&
+          docker-compose up --build -d
+          "
