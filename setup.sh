@@ -1,8 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Iniciando configuración de ReadyBear..."
-
-# Lista de microservicios basada en la estructura de ReadyBear26-qa
+# Lista de servicios
 SERVICES=(
     "auditservice"
     "auth-service"
@@ -17,18 +15,33 @@ SERVICES=(
     "updateproduct"
 )
 
-# Instalar dependencias en cada microservicio
-for SERVICE in "${SERVICES[@]}"; do
-    if [ -d "$SERVICE" ]; then
-        echo "📦 Instalando dependencias en $SERVICE..."
-        cd $SERVICE
+# Recorrer cada servicio e instalar dependencias según el lenguaje
+for service in "${SERVICES[@]}"; do
+    echo "📦 Instalando dependencias en $service..."
+    cd $service || continue
+    
+    # Node.js (package.json)
+    if [ -f "package.json" ]; then
         npm install
-        cd ..
-    else
-        echo "⚠️ Advertencia: No se encontró el directorio $SERVICE, saltando..."
     fi
+    
+    # Python (requirements.txt)
+    if [ -f "requirements.txt" ]; then
+        pip install -r requirements.txt
+    fi
+    
+    # Go (go.mod)
+    if [ -f "go.mod" ]; then
+        go mod tidy
+    fi
+    
+    # .NET (C# .csproj)
+    if ls *.csproj 1> /dev/null 2>&1; then
+        dotnet restore
+    fi
+    
+    cd ..
 done
 
 echo "✅ Instalación completada. Puedes iniciar los servicios manualmente."
 echo "Para ejecutar un servicio, usa: cd <servicio> && npm start"
-
