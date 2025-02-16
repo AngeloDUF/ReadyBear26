@@ -8,7 +8,9 @@ const Navbar = () => {
 
   useEffect(() => {
     const checkAuth = () => {
-      setIsAuthenticated(!!localStorage.getItem("auth"));
+      const token = localStorage.getItem("auth");
+      console.log("🔄 Estado de autenticación:", token);
+      setIsAuthenticated(!!token);
     };
 
     window.addEventListener("storage", checkAuth);
@@ -34,17 +36,22 @@ const Navbar = () => {
             My Shop
           </Link>
         </Typography>
-        <Box>
+
+        <Box sx={{ display: "flex", gap: 2 }}>
           <Button color="inherit">
             <Link to="/" style={{ textDecoration: "none", color: "white" }}>
               Home
             </Link>
           </Button>
-          {isAuthenticated ? (
+          <Button color="inherit">
+            <Link to="/comments" style={{ textDecoration: "none", color: "white" }}>
+              Comentarios
+            </Link>
+          </Button>
             <>
               <Button color="inherit">
                 <Link to="/products" style={{ textDecoration: "none", color: "white" }}>
-                  Productos
+                  Products
                 </Link>
               </Button>
               <Button color="inherit">
@@ -56,7 +63,8 @@ const Navbar = () => {
                 Cerrar sesión
               </Button>
             </>
-          ) : (
+
+          {!isAuthenticated && (
             <Button color="inherit">
               <Link to="/login" style={{ textDecoration: "none", color: "white" }}>
                 Login
