@@ -1,23 +1,47 @@
 #!/bin/bash
 
-echo "🚀 Iniciando configuración de ReadyBear..."
+# Lista de servicios
+SERVICES=(
+    "auditservice"
+    "auth-service"
+    "backend-auth"
+    "commentservice"
+    "deleteproduct"
+    "documentservice"
+    "frontendproduct"
+    "productservice"
+    "readproduct"
+    "suggestionservice"
+    "updateproduct"
+)
 
-# Lista de microservicios
-SERVICES=("auth-service" "deleteproduct" "productservice" "readproduct" "updateproduct")
-
-# Instalar dependencias en cada microservicio
-for SERVICE in "${SERVICES[@]}"; do
-    echo "📦 Instalando dependencias en $SERVICE..."
-    cd $SERVICE
-    npm install
+# Recorrer cada servicio e instalar dependencias según el lenguaje
+for service in "${SERVICES[@]}"; do
+    echo "📦 Instalando dependencias en $service..."
+    cd $service || continue
+    
+    # Node.js (package.json)
+    if [ -f "package.json" ]; then
+        npm install
+    fi
+    
+    # Python (requirements.txt)
+    if [ -f "requirements.txt" ]; then
+        pip install -r requirements.txt
+    fi
+    
+    # Go (go.mod)
+    if [ -f "go.mod" ]; then
+        go mod tidy
+    fi
+    
+    # .NET (C# .csproj)
+    if ls *.csproj 1> /dev/null 2>&1; then
+        dotnet restore
+    fi
+    
     cd ..
 done
-
-# Instalar dependencias en el frontend
-echo "🎨 Instalando dependencias en frontendproduct..."
-cd frontendproduct
-npm install
-cd ..
 
 echo "✅ Instalación completada. Puedes iniciar los servicios manualmente."
 echo "Para ejecutar un servicio, usa: cd <servicio> && npm start"
