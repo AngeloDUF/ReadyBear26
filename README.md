@@ -1,81 +1,89 @@
-# ReadyBear - Ecommerce
+Aquí tienes el README traducido al inglés:  
 
-## 📌 Descripción
-ReadyBear es una plataforma de ecommerce desarrollada con **React, Node.js, Express y MySQL** basada en una arquitectura de microservicios. Permite la gestión de productos con autenticación y control de usuarios.
+---
 
-## 🏗️ Arquitectura del Proyecto
-Este proyecto sigue una arquitectura de microservicios:
+# **ReadyBear - Ecommerce**  
 
-- **Frontend** (`frontendproduct/`): Aplicación en React con Vite para la UI.
-- **Auth Service** (`auth-service/`): Servicio de autenticación con JWT.
-- **Product Service** (`productservice/`): Microservicio para manejar productos.
-- **Delete Product Service** (`deleteproduct/`): Microservicio para eliminar productos.
-- **Update Product Service** (`updateproduct/`): Microservicio para actualizar productos.
-- **Read Product Service** (`readproduct/`): Microservicio para leer productos.
+## 📌 **Description**  
+ReadyBear is an ecommerce platform developed with **React, Node.js, Express, and MySQL**, based on a microservices architecture. It enables product management with authentication and user control.  
 
-## 🚀 Tecnologías Utilizadas
-- **Frontend**: React + Vite, React Router, Axios
-- **Backend**: Node.js, Express.js
-- **Base de Datos**: MySQL
-- **Autenticación**: JSON Web Tokens (JWT)
-- **Despliegue**: AWS EC2
+## 🏗️ **Project Architecture**  
+This project follows a **microservices architecture**:  
 
-## 📂 Estructura del Proyecto
+- **Frontend** (`frontendproduct/`): React application with Vite for the UI.  
+- **Auth Service** (`auth-service/`): Authentication service using JWT.  
+- **Product Service** (`productservice/`): Microservice for handling products.  
+- **Delete Product Service** (`deleteproduct/`): Microservice for deleting products.  
+- **Update Product Service** (`updateproduct/`): Microservice for updating products.  
+- **Read Product Service** (`readproduct/`): Microservice for reading products.  
+
+## 🚀 **Technologies Used**  
+- **Frontend**: React + Vite, React Router, Axios  
+- **Backend**: Node.js, Express.js  
+- **Database**: MySQL  
+- **Authentication**: JSON Web Tokens (JWT)  
+- **Deployment**: AWS EC2  
+
+## 📂 **Project Structure**  
 ```bash
 readybear/
- ├── auth-service/        # Servicio de autenticación
- ├── deleteproduct/       # Microservicio para eliminar productos
- ├── frontendproduct/     # Frontend en React + Vite
- │   ├── public/          # Recursos estáticos
- │   ├── src/             # Código fuente
- │   │   ├── components/  # Componentes reutilizables
- │   │   ├── pages/       # Páginas principales
- │   │   ├── styles/      # Estilos globales
- │   ├── package.json     # Dependencias del frontend
- │   ├── vite.config.js   # Configuración de Vite
- ├── productservice/      # Servicio principal de productos
- ├── readproduct/         # Servicio para leer productos
- ├── updateproduct/       # Servicio para actualizar productos
- ├── .gitignore           # Archivos ignorados en Git
- ├── README.md            # Documentación principal
+ ├── auth-service/        # Authentication service
+ ├── deleteproduct/       # Microservice for deleting products
+ ├── frontendproduct/     # Frontend with React + Vite
+ │   ├── public/          # Static resources
+ │   ├── src/             # Source code
+ │   │   ├── components/  # Reusable components
+ │   │   ├── pages/       # Main pages
+ │   │   ├── styles/      # Global styles
+ │   ├── package.json     # Frontend dependencies
+ │   ├── vite.config.js   # Vite configuration
+ ├── productservice/      # Main product service
+ ├── readproduct/         # Microservice for reading products
+ ├── updateproduct/       # Microservice for updating products
+ ├── .gitignore           # Files ignored by Git
+ ├── README.md            # Main documentation
 ```
 
-## ⚡ Instalación y Configuración
-### 1️⃣ Clonar el repositorio
+## ⚡ **Installation and Configuration**  
+### 1️⃣ **Clone the repository**  
 ```bash
-git clone https://github.com/tu-usuario/readybear.git
+git clone https://github.com/your-username/readybear.git
 cd readybear
 ```
-### 2️⃣ Configurar el backend
-Cada microservicio tiene su propio archivo `.env`. Asegúrate de configurar las variables de entorno.
+### 2️⃣ **Set up the backend**  
+Each microservice has its own `.env` file. Make sure to configure the environment variables.  
 ```bash
-cd productservice  # O cualquier otro microservicio
-npm install        # Instalar dependencias
-npm start         # Iniciar servicio
+cd productservice  # Or any other microservice
+npm install        # Install dependencies
+npm start          # Start the service
 ```
-### 3️⃣ Configurar el frontend
+### 3️⃣ **Set up the frontend**  
 ```bash
 cd frontendproduct
 npm install
-npm run dev  # Iniciar frontend
+npm run dev  # Start the frontend
 ```
 
-## 🔐 Autenticación y Seguridad
-- Los usuarios deben iniciar sesión en `/login` antes de acceder a otras funcionalidades.
-- Se usa **JWT** para la autenticación de usuarios.
-- Se implementa protección de rutas en `App.jsx`.
+## 🔐 **Authentication and Security**  
+- Users must log in at `/login` before accessing other functionalities.  
+- **JWT** is used for user authentication.  
+- Route protection is implemented in `App.jsx`.  
 
-## 📌 Funcionalidades
-✅ **Autenticación con JWT**
-✅ **CRUD de productos**
-✅ **Arquitectura de microservicios**
-✅ **Frontend con React y Vite**
-✅ **Backend con Node.js y MySQL**
-✅ **Protección de rutas**
+## 📌 **Features**  
+✅ **JWT authentication**  
+✅ **Product CRUD**  
+✅ **Microservices architecture**  
+✅ **Frontend with React and Vite**  
+✅ **Backend with Node.js and MySQL**  
+✅ **Route protection**  
 
-## 🚀 Despliegue en AWS
-El backend está desplegado en **AWS EC2**, mientras que el frontend se puede alojar en Vercel o S3.
+## 🚀 **Deployment on AWS**  
+The backend is deployed on **AWS EC2**, while the frontend can be hosted on **Vercel or S3**.  
 
-## 📬 Contacto
-Si tienes dudas o quieres contribuir, contáctame en **[tu email o GitHub]**. ¡Gracias por tu interés en ReadyBear! 🚀
+## 📬 **Contact**  
+If you have any questions or would like to contribute, contact me at **[adunaucho@uce.edu.ec or cabohorquez@uce.edu.ec]**.  
+Thanks for your interest in ReadyBear! 🚀  
 
+---
+
+This version keeps all the technical details while making it clear in English. Let me know if you need any modifications! 🚀
