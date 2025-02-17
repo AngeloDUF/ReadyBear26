@@ -108,3 +108,49 @@ jobs:
             pm2 save
             echo "✅ Backend-Auth actualizado en EC2"
           EOF
+
+  deploy-product-service:
+            runs-on: ubuntu-latest
+            steps:
+              - name: Checkout código
+                uses: actions/checkout@v4
+        
+              - name: Configurar clave SSH para Product Service
+                run: |
+                  mkdir -p ~/.ssh
+                  echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/readybear-key.pem
+                  chmod 600 ~/.ssh/readybear-key.pem
+                  ssh-keyscan -H ${{ secrets.EC2_HOST_PRODUCT_SERVICE }} >> ~/.ssh/known_hosts
+        
+              - name: Desplegar Product Service en EC2
+                run: |
+                  ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST_PRODUCT_SERVICE }} << 'EOF'
+                    set -e
+                    echo "🚀 Actualizando código en la instancia Product Service"
+        
+                    cd ~/ReadyBear26
+                    git reset --hard origin/qa
+                    git pull origin qa
+        
+                    cd ~/ReadyBear26/productservice
+                    npm install
+        
+                    # 🔧 Instalar PM2 con sudo si no está instalado
+                    if ! command -v pm2 &> /dev/null; then
+                      echo "📦 Instalando PM2..."
+                      sudo npm install -g pm2
+                    fi
+        
+                    # 🔄 Verificar si Product Service está corriendo
+                    if pm2 list | grep -q "productservice"; then
+                      echo "🔄 Reiniciando Product Service..."
+                      pm2 restart productservice
+                    else
+                      echo "🚀 Iniciando Product Service..."
+                      pm2 start src/app.js --name productservice
+                    fi
+        
+                    pm2 save
+                    echo "✅ Product Service actualizado en EC2"
+                  EOF
+        
