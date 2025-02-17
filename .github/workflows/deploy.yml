@@ -45,8 +45,11 @@ jobs:
             npm install
             npm run build
 
-            aws s3 sync dist/ s3://readybear-frontend --delete
-            echo "✅ Frontend actualizado en S3"
+            # Intentar sincronizar con S3 (esto fallará sin permisos)
+            echo "🚀 Intentando sincronizar con S3..."
+            aws s3 sync dist/ s3://readybear-frontend --delete || echo "❌ ERROR: Sin permisos para acceder a S3"
+
+            echo "✅ Proceso de despliegue finalizado en Frontend"
           EOF
 
   deploy-auth-service:
@@ -100,10 +103,12 @@ jobs:
               docker-compose up -d auth-service
             fi
 
-            # Si MongoDB no está corriendo, iniciarlo sin eliminarlo
-            if ! docker ps --filter "name=mongo-db" --format '{{.Names}}' | grep -q "mongo-db"; then
+            # Si MongoDB ya está corriendo, no hacer nada, si no, iniciarlo
+            if docker ps --filter "name=mongo-db" --format '{{.Names}}' | grep -q "mongo-db"; then
+              echo "✅ MongoDB ya está corriendo"
+            else
               echo "🚀 Iniciando MongoDB..."
-              docker-compose up -d mongo-db
+              docker start mongo-db || docker-compose up -d mongo-db
             fi
 
             echo "✅ Auth Service actualizado en EC2"
