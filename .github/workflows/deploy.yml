@@ -99,7 +99,7 @@ jobs:
             # 🔄 Verificar si Backend-Auth está corriendo
             if pm2 list | grep -q "backend-auth"; then
               echo "🔄 Reiniciando Backend-Auth..."
-              pm2 restart backend-auth
+              pm2 restart backend-auth || pm2 start server.js --name backend-auth
             else
               echo "🚀 Iniciando Backend-Auth..."
               pm2 start server.js --name backend-auth
