@@ -62,5 +62,4 @@ jobs:
             git reset --hard origin/qa
             git pull origin qa
 
-            echo "✅ Código actualizado en la instancia Auth Service"           
-            EOF
+            echo "✅ Código actualizado en la instancia Auth Service"           EOF
