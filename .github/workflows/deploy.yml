@@ -55,56 +55,37 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Verificar que los secrets están configurados
-        run: |
-          if [ -z "${{ secrets.EC2_HOST_AUTH }}" ]; then
-            echo "❌ ERROR: EC2_HOST_AUTH no está configurado en GitHub Secrets"
-            exit 1
+      -       - name: Desplegar Auth Service en EC2
+      run: |
+        ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST_AUTH }} << 'EOF'
+          set -e
+          echo "🚀 Actualizando código en la instancia Auth Service"
+
+          cd ~/ReadyBear26
+          git reset --hard origin/qa
+          git pull origin qa
+
+          # Asegurar que Docker está instalado y corriendo
+          sudo yum update -y
+          sudo yum install -y docker git
+          sudo systemctl start docker
+          sudo systemctl enable docker
+          sudo usermod -aG docker ec2-user
+
+          # Si Auth Service ya está corriendo, solo reiniciarlo
+          if docker ps --filter "name=auth-service" --format '{{.Names}}' | grep -q "auth-service"; then
+            echo "🔄 Reiniciando Auth Service..."
+            docker restart auth-service
+          else
+            echo "🚀 Iniciando Auth Service..."
+            docker-compose up -d auth-service
           fi
-          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
-            echo "❌ ERROR: SSH_PRIVATE_KEY no está configurado en GitHub Secrets"
-            exit 1
+
+          # Si MongoDB no está corriendo, iniciarlo sin eliminarlo
+          if ! docker ps --filter "name=mongo-db" --format '{{.Names}}' | grep -q "mongo-db"; then
+            echo "🚀 Iniciando MongoDB..."
+            docker-compose up -d mongo-db
           fi
-          echo "✅ Secrets verificados correctamente."
 
-      - name: Configurar clave SSH para Auth Service
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/readybear-key.pem
-          chmod 600 ~/.ssh/readybear-key.pem
-          ssh-keyscan -H ${{ secrets.EC2_HOST_AUTH }} >> ~/.ssh/known_hosts
-
-      - name: Desplegar Auth Service en EC2
-        run: |
-          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST_AUTH }} << 'EOF'
-            set -e
-            echo "🚀 Actualizando código en la instancia Auth Service"
-
-            cd ~/ReadyBear26
-            git reset --hard origin/qa
-            git pull origin qa
-
-            # Asegurar que Docker está instalado y corriendo
-            sudo yum update -y
-            sudo yum install -y docker git
-            sudo systemctl start docker
-            sudo systemctl enable docker
-            sudo usermod -aG docker ec2-user
-
-            # Si el contenedor de Auth Service ya está corriendo, solo reiniciarlo
-            if [ \$(docker ps -q -f name=auth-service) ]; then
-              echo "🔄 Reiniciando Auth Service..."
-              docker restart auth-service
-            else
-              echo "🚀 Iniciando Auth Service..."
-              docker-compose up --build -d auth-service
-            fi
-
-            # Si MongoDB no está corriendo, iniciarlo
-            if [ ! \$(docker ps -q -f name=mongo-db) ]; then
-              echo "🚀 Iniciando MongoDB..."
-              docker-compose up -d mongo-db
-            fi
-
-            echo "✅ Auth Service actualizado en EC2"
-          EOF
+          echo "✅ Auth Service actualizado en EC2"
+        EOF
