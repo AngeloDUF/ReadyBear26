@@ -1,0 +1,176 @@
+version: '3.8'
+
+services:
+  # Servicio de MongoDB
+  mongo-db:
+    image: mongo
+    container_name: mongo-db
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - readybear-network
+    volumes:
+      - mongo-data:/data/db
+
+  # Servicio de autenticación
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    restart: always
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongo-db
+    env_file:
+      - ./auth-service/.env
+    networks:
+      - readybear-network
+
+  # Servicio de backend-auth
+  backend-auth:
+    build: ./backend-auth
+    container_name: backend-auth
+    restart: always
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongo-db
+    env_file:
+      - ./backend-auth/.env
+    networks:
+      - readybear-network
+
+  # Servicio de auditoría
+  auditservice:
+    build: ./auditservice
+    container_name: auditservice
+    restart: always
+    ports:
+      - "3003:3003"
+    depends_on:
+      - mongo-db
+    env_file:
+      - ./auditservice/.env
+    networks:
+      - readybear-network
+
+  # Servicio de comentarios
+  commentservice:
+    build: ./commentservice
+    container_name: commentservice
+    restart: always
+    ports:
+      - "3004:3004"
+    depends_on:
+      - mongo-db
+    env_file:
+      - ./commentservice/.env
+    networks:
+      - readybear-network
+
+  # Servicio para eliminar productos
+  deleteproduct:
+    build: ./deleteproduct
+    container_name: deleteproduct
+    restart: always
+    ports:
+      - "3005:3005"
+    depends_on:
+      - mongo-db
+    env_file:
+      - ./deleteproduct/.env
+    networks:
+      - readybear-network
+
+  # Servicio principal de productos
+  productservice:
+    build: ./productservice
+    container_name: productservice
+    restart: always
+    ports:
+      - "3006:3006"
+    depends_on:
+      - mongo-db
+    env_file:
+      - ./productservice/.env
+    networks:
+      - readybear-network
+
+  # Servicio para leer productos
+  readproduct:
+    build: ./readproduct
+    container_name: readproduct
+    restart: always
+    ports:
+      - "3007:3007"
+    depends_on:
+      - mongo-db
+    env_file:
+      - ./readproduct/.env
+    networks:
+      - readybear-network
+
+  # Servicio para actualizar productos
+  updateproduct:
+    build: ./updateproduct
+    container_name: updateproduct
+    restart: always
+    ports:
+      - "3008:3008"
+    depends_on:
+      - mongo-db
+    env_file:
+      - ./updateproduct/.env
+    networks:
+      - readybear-network
+
+  # Servicio de sugerencias
+ # suggestionservice:
+  #  build: ./suggestionservice
+   # container_name: suggestionservice
+    #restart: always
+    #ports:
+    # - "3009:3009"
+    #depends_on:
+    #  - mongo-db
+    #env_file:
+     # - ./suggestionservice/.env
+    #networks:
+     # - readybear-network
+
+  # Servicio de documentos
+  documentservice:
+    build: ./documentservice
+    container_name: documentservice
+    restart: always
+    ports:
+      - "3010:3010"
+    depends_on:
+      - mongo-db
+    env_file:
+      - ./documentservice/.env
+    networks:
+      - readybear-network
+
+  # Frontend en React con Vite
+  frontendproduct:
+    build: ./frontendproduct
+    container_name: frontendproduct
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend-auth
+      - productservice
+    env_file:
+      - ./frontendproduct/.env
+    networks:
+      - readybear-network
+
+networks:
+  readybear-network:
+    driver: bridge
+
+volumes:
+  mongo-data:

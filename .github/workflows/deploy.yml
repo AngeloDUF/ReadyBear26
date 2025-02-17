@@ -1,0 +1,196 @@
+name: Deploy ReadyBear
+
+on:
+  push:
+    branches:
+      - qa  # Ejecutar solo en la rama 'qa'
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar clave SSH para Frontend
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/readybear-key.pem
+          chmod 600 ~/.ssh/readybear-key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Desplegar Frontend en EC2
+        run: |
+          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+            echo "🚀 Actualizando código en la instancia Frontend"
+
+            cd ~/ReadyBear26
+            git reset --hard origin/qa
+            git pull origin qa
+
+            cd ~/ReadyBear26/frontendproduct
+            npm install
+            npm run build
+
+            echo "🚀 Intentando sincronizar con S3..."
+            aws s3 sync dist/ s3://readybear-frontend --delete || echo "❌ ERROR: Sin permisos para acceder a S3"
+
+            echo "✅ Proceso de despliegue finalizado en Frontend"
+          EOF
+
+  deploy-auth-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar clave SSH para Auth Service
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/readybear-key.pem
+          chmod 600 ~/.ssh/readybear-key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST_AUTH }} >> ~/.ssh/known_hosts
+
+      - name: Actualizar código en la instancia Auth Service 
+        run: |
+          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST_AUTH }} << 'EOF'
+            set -e
+            echo "🚀 Actualizando código en la instancia Auth Service"
+
+            cd ~/ReadyBear26
+            git reset --hard origin/qa
+            git pull origin qa
+
+            echo "✅ Código actualizado en la instancia Auth Service"           EOF
+
+  deploy-backend-auth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar clave SSH para Backend-Auth
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/readybear-key.pem
+          chmod 600 ~/.ssh/readybear-key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST_BACKEND_AUTH }} >> ~/.ssh/known_hosts
+
+      - name: Desplegar Backend-Auth en EC2
+        run: |
+          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST_BACKEND_AUTH }} << 'EOF'
+            set -e
+            echo "🚀 Actualizando código en la instancia Backend-Auth"
+
+            cd ~/ReadyBear26
+            git reset --hard origin/qa
+            git pull origin qa
+
+            cd ~/ReadyBear26/backend-auth
+            npm install
+
+            # 🔧 Instalar PM2 con sudo si no está instalado
+            if ! command -v pm2 &> /dev/null; then
+              echo "📦 Instalando PM2..."
+              sudo npm install -g pm2
+            fi
+
+            # 🔄 Verificar si Backend-Auth está corriendo
+            if pm2 list | grep -q "backend-auth"; then
+              echo "🔄 Reiniciando Backend-Auth..."
+              pm2 restart backend-auth || pm2 start server.js --name backend-auth
+            else
+              echo "🚀 Iniciando Backend-Auth..."
+              pm2 start server.js --name backend-auth
+            fi
+
+            pm2 save
+            echo "✅ Backend-Auth actualizado en EC2"
+          EOF
+
+  deploy-product-service:
+            runs-on: ubuntu-latest
+            steps:
+              - name: Checkout código
+                uses: actions/checkout@v4
+        
+              - name: Configurar clave SSH para Product Service
+                run: |
+                  mkdir -p ~/.ssh
+                  echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/readybear-key.pem
+                  chmod 600 ~/.ssh/readybear-key.pem
+                  ssh-keyscan -H ${{ secrets.EC2_HOST_PRODUCT_SERVICE }} >> ~/.ssh/known_hosts
+        
+              - name: Desplegar Product Service en EC2
+                run: |
+                  ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST_PRODUCT_SERVICE }} << 'EOF'
+                    set -e
+                    echo "🚀 Actualizando código en la instancia Product Service"
+        
+                    cd ~/ReadyBear26
+                    git reset --hard origin/qa
+                    git pull origin qa
+        
+                    cd ~/ReadyBear26/productservice
+                    npm install
+        
+                    # 🔧 Instalar PM2 con sudo si no está instalado
+                    if ! command -v pm2 &> /dev/null; then
+                      echo "📦 Instalando PM2..."
+                      sudo npm install -g pm2
+                    fi
+        
+                    # 🔄 Verificar si Product Service está corriendo
+                    if pm2 list | grep -q "productservice"; then
+                      echo "🔄 Reiniciando Product Service..."
+                      pm2 restart productservice
+                    else
+                      echo "🚀 Iniciando Product Service..."
+                      pm2 start src/app.js --name productservice
+                    fi
+        
+                    pm2 save
+                    echo "✅ Product Service actualizado en EC2"
+                  EOF
+
+  deploy-document-service:
+                    runs-on: ubuntu-latest
+                    steps:
+                      - name: Checkout código
+                        uses: actions/checkout@v4
+                
+                      - name: Configurar clave SSH para Document Service
+                        run: |
+                          mkdir -p ~/.ssh
+                          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/readybear-key.pem
+                          chmod 600 ~/.ssh/readybear-key.pem
+                          ssh-keyscan -H ${{ secrets.EC2_DOCUMENT_SERVICE }} >> ~/.ssh/known_hosts
+                
+                      - name: Desplegar Document Service en EC2
+                        run: |
+                          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_DOCUMENT_SERVICE }} << 'EOF'
+                            set -e
+                            echo "🚀 Actualizando código en la instancia Document Service"
+                
+                            cd ~/ReadyBear26
+                            git fetch origin qa
+                            git reset --soft origin/qa  # No sobrescribe los cambios locales
+                            git pull --no-rebase origin qa || echo "⚠️ Saltando rebase por cambios locales"
+                
+                            cd ~/ReadyBear26/documentservice
+                
+                            # 🔄 Verificar si Document Service está corriendo con PM2
+                            if pm2 list | grep -q "documentservice"; then
+                              echo "🔄 Reiniciando Document Service..."
+                              pm2 restart documentservice
+                            else
+                              echo "🚀 Iniciando Document Service..."
+                              pm2 start "dotnet run --project documentservices.csproj" --name documentservice
+                            fi
+                
+                            pm2 save
+                            echo "✅ Document Service actualizado en EC2"
+                          EOF
+                
+        
