@@ -52,7 +52,7 @@ jobs:
           chmod 600 ~/.ssh/readybear-key.pem
           ssh-keyscan -H ${{ secrets.EC2_HOST_AUTH }} >> ~/.ssh/known_hosts
 
-      - name: Desplegar Auth Service en EC2
+      - name: Actualizar código en la instancia Auth Service 
         run: |
           ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST_AUTH }} << 'EOF'
             set -e
@@ -62,35 +62,5 @@ jobs:
             git reset --hard origin/qa
             git pull origin qa
 
-            # Asegurar que Docker está instalado y corriendo
-            sudo yum update -y
-            sudo yum install -y docker git
-            sudo systemctl start docker
-            sudo systemctl enable docker
-            sudo usermod -aG docker ec2-user
-
-            # **Si Auth Service ya está corriendo, reiniciarlo**
-            if docker ps --filter "name=auth-service" --format '{{.Names}}' | grep -q "auth-service"; then
-              echo "🔄 Reiniciando Auth Service..."
-              docker restart auth-service
-            else
-              echo "🚀 Iniciando Auth Service..."
-              docker-compose up -d auth-service
-            fi
-
-            # **Solución para el conflicto con `mongo-db`**
-            if docker ps --filter "name=mongo-db" --format '{{.Names}}' | grep -q "mongo-db"; then
-              echo "✅ MongoDB ya está corriendo"
-            elif docker ps -a --filter "name=mongo-db" --format '{{.Names}}' | grep -q "mongo-db"; then
-              echo "🔄 MongoDB existe pero está detenido. Iniciándolo..."
-              docker start mongo-db
-            else
-              echo "❗ Eliminando contenedor en conflicto"
-              docker rm -f mongo-db || echo "No se encontró un contenedor en ejecución con ese nombre"
-
-              echo "🚀 Iniciando MongoDB correctamente..."
-              docker-compose up -d mongo-db
-            fi
-
-            echo "✅ Auth Service actualizado en EC2"
-          EOF
+            echo "✅ Código actualizado en la instancia Auth Service"           
+            EOF
