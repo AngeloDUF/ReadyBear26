@@ -22,19 +22,41 @@ jobs:
 
       - name: Verificar conexión SSH con EC2
         run: |
-          ssh -i ~/.ssh/readybear-key.pem ubuntu@${{ secrets.EC2_HOST }} "echo 'Conexión establecida con EC2'"
+          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST }} "echo 'Conexión establecida con EC2'"
 
       - name: Desplegar en EC2
         run: |
-          ssh -i ~/.ssh/readybear-key.pem ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-            cd ~/ReadyBear26
+          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+            echo "Iniciando despliegue en Amazon Linux 2023"
+
+            # Verificar y actualizar el código
+            cd ~/ReadyBear26 || exit 1
             git reset --hard origin/qa
             git pull origin qa
-            chmod +x setup.sh setup-env.sh
-            ./setup.sh
-            ./setup-env.sh
-            docker-compose down
-            docker-compose pull
-            docker-compose up --build -d
+
+            # Asegurar que Docker esté instalado y corriendo
+            sudo yum update -y
+            sudo yum install -y docker git
+            sudo systemctl start docker
+            sudo systemctl enable docker
+            sudo usermod -aG docker ec2-user
+
+            # Levantar el servicio con Docker Compose
+            sudo docker-compose down
+            sudo docker-compose pull
+            sudo docker-compose up --build -d
+
             echo "Despliegue completado en EC2"
+          EOF
+
+      - name: Subir frontend a S3
+        run: |
+          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            echo "Subiendo frontend a S3..."
+            cd ~/ReadyBear26/frontendproduct
+            npm install
+            npm run build
+            aws s3 sync dist/ s3://readybear-frontend --delete
+            echo "Frontend actualizado en S3"
           EOF
