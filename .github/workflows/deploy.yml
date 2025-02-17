@@ -63,3 +63,42 @@ jobs:
             git pull origin qa
 
             echo "✅ Código actualizado en la instancia Auth Service"           EOF
+
+  deploy-backend-auth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar clave SSH para Backend-Auth
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/readybear-key.pem
+          chmod 600 ~/.ssh/readybear-key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST_BACKEND_AUTH }} >> ~/.ssh/known_hosts
+
+      - name: Desplegar Backend-Auth en EC2
+        run: |
+          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST_BACKEND_AUTH }} << 'EOF'
+            set -e
+            echo "🚀 Actualizando código en la instancia Backend-Auth"
+
+            cd ~/ReadyBear26
+            git reset --hard origin/qa
+            git pull origin qa
+
+            cd ~/ReadyBear26/backend-auth
+            npm install
+
+            # Verificar si Backend-Auth está corriendo
+            if pm2 list | grep -q "backend-auth"; then
+              echo "🔄 Reiniciando Backend-Auth..."
+              pm2 restart backend-auth
+            else
+              echo "🚀 Iniciando Backend-Auth..."
+              pm2 start server.js --name backend-auth
+            fi
+
+            pm2 save
+            echo "✅ Backend-Auth actualizado en EC2"
+          EOF
