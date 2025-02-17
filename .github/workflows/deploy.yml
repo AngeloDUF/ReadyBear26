@@ -91,10 +91,20 @@ jobs:
             sudo systemctl enable docker
             sudo usermod -aG docker ec2-user
 
-            # Reiniciar el servicio de autenticación
-            docker-compose down
-            docker-compose pull
-            docker-compose up --build -d auth-service
+            # Si el contenedor de Auth Service ya está corriendo, solo reiniciarlo
+            if [ \$(docker ps -q -f name=auth-service) ]; then
+              echo "🔄 Reiniciando Auth Service..."
+              docker restart auth-service
+            else
+              echo "🚀 Iniciando Auth Service..."
+              docker-compose up --build -d auth-service
+            fi
+
+            # Si MongoDB no está corriendo, iniciarlo
+            if [ ! \$(docker ps -q -f name=mongo-db) ]; then
+              echo "🚀 Iniciando MongoDB..."
+              docker-compose up -d mongo-db
+            fi
 
             echo "✅ Auth Service actualizado en EC2"
           EOF
