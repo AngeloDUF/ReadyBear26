@@ -90,6 +90,12 @@ jobs:
             cd ~/ReadyBear26/backend-auth
             npm install
 
+            # Verificar si PM2 está instalado
+            if ! command -v pm2 &> /dev/null; then
+              echo "📦 Instalando PM2..."
+              npm install -g pm2
+            fi
+
             # Verificar si Backend-Auth está corriendo
             if pm2 list | grep -q "backend-auth"; then
               echo "🔄 Reiniciando Backend-Auth..."
