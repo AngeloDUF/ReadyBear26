@@ -6,9 +6,8 @@ on:
       - qa  # Ejecutar solo en la rama 'qa'
 
 jobs:
-  deploy:
+  deploy-frontend:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
@@ -25,25 +24,63 @@ jobs:
           fi
           echo "✅ Secrets verificados correctamente."
 
-      - name: Configurar clave SSH
+      - name: Configurar clave SSH para Frontend
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/readybear-key.pem
           chmod 600 ~/.ssh/readybear-key.pem
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Verificar conexión SSH con EC2
-        run: |
-          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST }} "echo '✅ Conexión establecida con EC2'"
-
-      - name: Desplegar en EC2
+      - name: Desplegar Frontend en EC2
         run: |
           ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
-            echo "🚀 Iniciando despliegue en Amazon Linux 2023"
+            echo "🚀 Actualizando código en la instancia Frontend"
 
-            # Verificar y actualizar el código
-            cd ~/ReadyBear26 || exit 1
+            cd ~/ReadyBear26
+            git reset --hard origin/qa
+            git pull origin qa
+
+            cd ~/ReadyBear26/frontendproduct
+            npm install
+            npm run build
+
+            aws s3 sync dist/ s3://readybear-frontend --delete
+            echo "✅ Frontend actualizado en S3"
+          EOF
+
+  deploy-auth-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Verificar que los secrets están configurados
+        run: |
+          if [ -z "${{ secrets.EC2_HOST_AUTH }}" ]; then
+            echo "❌ ERROR: EC2_HOST_AUTH no está configurado en GitHub Secrets"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "❌ ERROR: SSH_PRIVATE_KEY no está configurado en GitHub Secrets"
+            exit 1
+          fi
+          echo "✅ Secrets verificados correctamente."
+
+      - name: Configurar clave SSH para Auth Service
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/readybear-key.pem
+          chmod 600 ~/.ssh/readybear-key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST_AUTH }} >> ~/.ssh/known_hosts
+
+      - name: Desplegar Auth Service en EC2
+        run: |
+          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST_AUTH }} << 'EOF'
+            set -e
+            echo "🚀 Actualizando código en la instancia Auth Service"
+
+            cd ~/ReadyBear26
             git reset --hard origin/qa
             git pull origin qa
 
@@ -54,28 +91,10 @@ jobs:
             sudo systemctl enable docker
             sudo usermod -aG docker ec2-user
 
-            # Asegurar permisos de Docker
-            newgrp docker << END
-              sudo docker-compose down
-              sudo docker-compose pull
-              sudo docker-compose up --build -d
-            END
+            # Reiniciar el servicio de autenticación
+            docker-compose down
+            docker-compose pull
+            docker-compose up --build -d auth-service
 
-            echo "✅ Despliegue completado en EC2"
-          EOF
-
-      - name: Subir frontend a S3
-        run: |
-          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-            echo "🚀 Subiendo frontend a S3..."
-            cd ~/ReadyBear26/frontendproduct
-
-            if [ ! -d "dist" ]; then
-              echo "❌ ERROR: No existe la carpeta 'dist/'. Ejecutando build..."
-              npm install
-              npm run build
-            fi
-
-            aws s3 sync dist/ s3://readybear-frontend --delete
-            echo "✅ Frontend actualizado en S3"
+            echo "✅ Auth Service actualizado en EC2"
           EOF
