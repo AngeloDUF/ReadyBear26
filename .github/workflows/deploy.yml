@@ -3,7 +3,7 @@ name: Deploy ReadyBear
 on:
   push:
     branches:
-      - qa  # Execute the workflow on the 'qa' branch
+      - qa  # Execute the workflow on the 'qa' branch xd
 
 jobs:
   deploy:
