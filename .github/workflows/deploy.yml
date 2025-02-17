@@ -12,18 +12,6 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Verificar que los secrets están configurados
-        run: |
-          if [ -z "${{ secrets.EC2_HOST }}" ]; then
-            echo "❌ ERROR: EC2_HOST no está configurado en GitHub Secrets"
-            exit 1
-          fi
-          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
-            echo "❌ ERROR: SSH_PRIVATE_KEY no está configurado en GitHub Secrets"
-            exit 1
-          fi
-          echo "✅ Secrets verificados correctamente."
-
       - name: Configurar clave SSH para Frontend
         run: |
           mkdir -p ~/.ssh
@@ -45,7 +33,6 @@ jobs:
             npm install
             npm run build
 
-            # Intentar sincronizar con S3 (esto fallará sin permisos)
             echo "🚀 Intentando sincronizar con S3..."
             aws s3 sync dist/ s3://readybear-frontend --delete || echo "❌ ERROR: Sin permisos para acceder a S3"
 
@@ -57,18 +44,6 @@ jobs:
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-
-      - name: Verificar que los secrets están configurados
-        run: |
-          if [ -z "${{ secrets.EC2_HOST_AUTH }}" ]; then
-            echo "❌ ERROR: EC2_HOST_AUTH no está configurado en GitHub Secrets"
-            exit 1
-          fi
-          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
-            echo "❌ ERROR: SSH_PRIVATE_KEY no está configurado en GitHub Secrets"
-            exit 1
-          fi
-          echo "✅ Secrets verificados correctamente."
 
       - name: Configurar clave SSH para Auth Service
         run: |
@@ -94,7 +69,7 @@ jobs:
             sudo systemctl enable docker
             sudo usermod -aG docker ec2-user
 
-            # **Reiniciar Auth Service si ya está corriendo**
+            # **Si Auth Service ya está corriendo, reiniciarlo**
             if docker ps --filter "name=auth-service" --format '{{.Names}}' | grep -q "auth-service"; then
               echo "🔄 Reiniciando Auth Service..."
               docker restart auth-service
@@ -103,14 +78,17 @@ jobs:
               docker-compose up -d auth-service
             fi
 
-            # **Si MongoDB ya está corriendo, no hacer nada, si no, solo iniciarlo**
+            # **Solución para el conflicto con `mongo-db`**
             if docker ps --filter "name=mongo-db" --format '{{.Names}}' | grep -q "mongo-db"; then
               echo "✅ MongoDB ya está corriendo"
             elif docker ps -a --filter "name=mongo-db" --format '{{.Names}}' | grep -q "mongo-db"; then
               echo "🔄 MongoDB existe pero está detenido. Iniciándolo..."
               docker start mongo-db
             else
-              echo "🚀 Iniciando MongoDB por primera vez..."
+              echo "❗ Eliminando contenedor en conflicto"
+              docker rm -f mongo-db || echo "No se encontró un contenedor en ejecución con ese nombre"
+
+              echo "🚀 Iniciando MongoDB correctamente..."
               docker-compose up -d mongo-db
             fi
 
