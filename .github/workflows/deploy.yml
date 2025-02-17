@@ -153,4 +153,44 @@ jobs:
                     pm2 save
                     echo "✅ Product Service actualizado en EC2"
                   EOF
+
+  deploy-document-service:
+                    runs-on: ubuntu-latest
+                    steps:
+                      - name: Checkout código
+                        uses: actions/checkout@v4
+                
+                      - name: Configurar clave SSH para Document Service
+                        run: |
+                          mkdir -p ~/.ssh
+                          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/readybear-key.pem
+                          chmod 600 ~/.ssh/readybear-key.pem
+                          ssh-keyscan -H ${{ secrets.EC2_DOCUMENT_SERVICE }} >> ~/.ssh/known_hosts
+                
+                      - name: Desplegar Document Service en EC2
+                        run: |
+                          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_DOCUMENT_SERVICE }} << 'EOF'
+                            set -e
+                            echo "🚀 Actualizando código en la instancia Document Service"
+                
+                            cd ~/ReadyBear26
+                            git fetch origin qa
+                            git reset --soft origin/qa  # No sobrescribe los cambios locales
+                            git pull --no-rebase origin qa || echo "⚠️ Saltando rebase por cambios locales"
+                
+                            cd ~/ReadyBear26/documentservice
+                
+                            # 🔄 Verificar si Document Service está corriendo con PM2
+                            if pm2 list | grep -q "documentservice"; then
+                              echo "🔄 Reiniciando Document Service..."
+                              pm2 restart documentservice
+                            else
+                              echo "🚀 Iniciando Document Service..."
+                              pm2 start "dotnet run --project documentservices.csproj" --name documentservice
+                            fi
+                
+                            pm2 save
+                            echo "✅ Document Service actualizado en EC2"
+                          EOF
+                
         
