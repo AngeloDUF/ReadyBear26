@@ -1,7 +1,3 @@
-Aquí tienes el README traducido al inglés:  
-
----
-
 # **ReadyBear - Ecommerce**  
 
 ## 📌 **Description**  
@@ -84,6 +80,4 @@ The backend is deployed on **AWS EC2**, while the frontend can be hosted on **Ve
 If you have any questions or would like to contribute, contact me at **[adunaucho@uce.edu.ec or cabohorquez@uce.edu.ec]**.  
 Thanks for your interest in ReadyBear! 🚀  
 
----
 
-This version keeps all the technical details while making it clear in English. Let me know if you need any modifications! 🚀
