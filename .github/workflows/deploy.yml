@@ -3,7 +3,7 @@ name: Deploy ReadyBear
 on:
   push:
     branches:
-      - qa  # Execute the workflow on the 'qa' branch xd
+      - qa  # Ejecutar solo en la rama 'qa'
 
 jobs:
   deploy:
@@ -13,6 +13,18 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
+      - name: Verificar que los secrets están configurados
+        run: |
+          if [ -z "${{ secrets.EC2_HOST }}" ]; then
+            echo "❌ ERROR: EC2_HOST no está configurado en GitHub Secrets"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "❌ ERROR: SSH_PRIVATE_KEY no está configurado en GitHub Secrets"
+            exit 1
+          fi
+          echo "✅ Secrets verificados correctamente."
+
       - name: Configurar clave SSH
         run: |
           mkdir -p ~/.ssh
@@ -20,44 +32,50 @@ jobs:
           chmod 600 ~/.ssh/readybear-key.pem
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-
       - name: Verificar conexión SSH con EC2
         run: |
-          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST }} "echo 'Conexión establecida con EC2'"
+          ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST }} "echo '✅ Conexión establecida con EC2'"
 
       - name: Desplegar en EC2
         run: |
           ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
-            echo "Iniciando despliegue en Amazon Linux 2023"
+            echo "🚀 Iniciando despliegue en Amazon Linux 2023"
 
             # Verificar y actualizar el código
             cd ~/ReadyBear26 || exit 1
             git reset --hard origin/qa
             git pull origin qa
 
-            # Asegurar que Docker esté instalado y corriendo
+            # Asegurar que Docker está instalado y corriendo
             sudo yum update -y
             sudo yum install -y docker git
             sudo systemctl start docker
             sudo systemctl enable docker
             sudo usermod -aG docker ec2-user
 
-            # Levantar el servicio con Docker Compose
-            sudo docker-compose down
-            sudo docker-compose pull
-            sudo docker-compose up --build -d
+            # Asegurar permisos de Docker
+            newgrp docker << END
+              sudo docker-compose down
+              sudo docker-compose pull
+              sudo docker-compose up --build -d
+            END
 
-            echo "Despliegue completado en EC2"
+            echo "✅ Despliegue completado en EC2"
           EOF
 
       - name: Subir frontend a S3
         run: |
           ssh -i ~/.ssh/readybear-key.pem ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-            echo "Subiendo frontend a S3..."
+            echo "🚀 Subiendo frontend a S3..."
             cd ~/ReadyBear26/frontendproduct
-            npm install
-            npm run build
+
+            if [ ! -d "dist" ]; then
+              echo "❌ ERROR: No existe la carpeta 'dist/'. Ejecutando build..."
+              npm install
+              npm run build
+            fi
+
             aws s3 sync dist/ s3://readybear-frontend --delete
-            echo "Frontend actualizado en S3"
+            echo "✅ Frontend actualizado en S3"
           EOF
